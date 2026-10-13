@@ -1,0 +1,120 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- ── Интернет ─────────────────────────────────────────────────────────── -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- ── Геолокация ───────────────────────────────────────────────────────── -->
+    <!-- Foreground (точная + приблизительная) — обязательны для geolocator   -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" tools:remove="android:maxSdkVersion" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" tools:remove="android:maxSdkVersion" />
+    
+    <!-- Удаление конфликтующих тегов от сторонних библиотек (Google Play Error Fix) -->
+    <uses-permission-sdk-23 android:name="android.permission.ACCESS_COARSE_LOCATION" tools:node="remove" />
+    <uses-permission-sdk-23 android:name="android.permission.ACCESS_FINE_LOCATION" tools:node="remove" />
+    <!-- Background location — нужна для трекинга маршрута водителя в фоне.   -->
+    <!-- Google Play требует Prominent Disclosure ДО запроса этого пермишна.  -->
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+
+    <!-- ── Камера (Фейс-контроль) ───────────────────────────────────────────── -->
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- ── Службы переднего плана (Android 9+) ──────────────────────────────── -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <!-- Android 14 (API 34): обязателен тип службы для фоновой локации       -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <!-- Android 13 (API 33): обязателен для показа уведомления Foreground Service -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- ── Bluetooth / MESH (Bridgefy BLE) ─────────────────────────────────── -->
+    <!-- Legacy Bluetooth (API ≤ 30) -->
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <!-- Android 12+ BLE permissions; neverForLocation — BLE используется     -->
+    <!-- только для MESH, а не для определения местоположения.                -->
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN"
+        android:usesPermissionFlags="neverForLocation"
+        tools:targetApi="s" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
+
+    <!-- ── Wi-Fi / Nearby ──────────────────────────────────────────────────── -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.NEARBY_WIFI_DEVICES"
+        android:usesPermissionFlags="neverForLocation"
+        tools:targetApi="tiramisu" />
+
+    <!-- BLE обязателен для MESH-функции приложения -->
+    <uses-feature android:name="android.hardware.bluetooth_le" android:required="true" />
+
+    <application
+        android:label="Explora Partners"
+        android:name=".MainApplication"
+        android:icon="@mipmap/launcher_icon"
+        android:allowBackup="false"
+        android:fullBackupOnly="false"
+        android:largeHeap="true"
+        android:hardwareAccelerated="true">
+
+        <!-- API-ключ Bridgefy (hardcoded for cross-machine build compatibility) -->
+        <meta-data
+            android:name="com.bridgefy.sdk.API_KEY"
+            android:value="YOUR_BRIDGEFY_API_KEY" />
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:taskAffinity=""
+            android:theme="@style/LaunchTheme"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize">
+            <meta-data
+                android:name="io.flutter.embedding.android.NormalTheme"
+                android:resource="@style/NormalTheme" />
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+
+        <!--
+            Foreground Location Service — декларация обязательна для Android 14 (API 34).
+            Без неё запуск foreground-сервиса с типом "location" приведёт к крашу.
+            Имя класса — из пакета geolocator (flutter plugin).
+        -->
+        <service
+            android:name="com.baseflow.geolocator.services.ForegroundLocationService"
+            android:foregroundServiceType="location"
+            android:exported="false" />
+
+        <!-- flutter_foreground_task Service -->
+        <service
+            android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
+            android:foregroundServiceType="location"
+            android:exported="false" />
+
+        <meta-data
+            android:name="flutterEmbedding"
+            android:value="2" />
+    </application>
+
+    <queries>
+        <!-- For url_launcher to find Telegram -->
+        <package android:name="org.telegram.messenger" />
+        <!-- For url_launcher to find WhatsApp -->
+        <package android:name="com.whatsapp" />
+        
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="https" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.PROCESS_TEXT"/>
+            <data android:mimeType="text/plain"/>
+        </intent>
+    </queries>
+</manifest>
